@@ -2,6 +2,8 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow } from 'electron'
 import { initIcpExecution } from './message/execution'
 import { createMainWindow } from './window'
+import { registerListeners } from '@/shared/icp/listener-register'
+// import { registerListeners } from '@/shared/icp/listener-register'
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -17,12 +19,17 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  createMainWindow()
+  const mainWindow = createMainWindow()
+  console.log('[DEBUG] / app.whenReady / mainWindow:', mainWindow)
+  registerListeners()
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })
+
+  // registerListeners()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
