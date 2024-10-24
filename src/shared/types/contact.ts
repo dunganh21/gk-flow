@@ -7,4 +7,13 @@ export interface Contact {
   id: string
   email: string[]
   representative: string
+  /**
+   * Có thể sử dụng tag cho mục đích tìm kiếm mail sau này
+   */
+  tags: string[]
+
+  /**
+   * Ghi chú
+   */
+  note?: string
 }
