@@ -2,11 +2,12 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@lib/utils'
 import { Button } from '@components/ui/button'
-import { HomeIcon, FileTextIcon, ExitIcon } from '@radix-ui/react-icons'
+import { HomeIcon, FileTextIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons'
 
 const sidebarItems = [
   { icon: HomeIcon, label: 'Dashboard', route: '/' },
-  { icon: FileTextIcon, label: 'Mail template', route: '/template' }
+  { icon: FileTextIcon, label: 'Mail template', route: '/template' },
+  { icon: PersonIcon, label: 'Contact', route: '/contact' }
 ]
 
 const Sidebar: React.FC = () => {
