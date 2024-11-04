@@ -19,6 +19,7 @@ import {
 } from '@renderer/components/ui'
 import { FIELD_TYPES } from '@renderer/constants/select'
 import { useAddFieldDialogState, useContactDefStorage } from '@renderer/storage/contact-field'
+import AllowFieldList from './allow-list-field'
 
 const AddFieldDialog = () => {
   const { isOpen, toggleOpen } = useAddFieldDialogState()
@@ -26,6 +27,11 @@ const AddFieldDialog = () => {
 
   if (!currentField) return null
   const { field, position } = currentField as { field: ContactDefField; position: number | 'new' }
+
+  const handleUpsertField = () => {
+    setField(position, field)
+    toggleOpen()
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={toggleOpen} modal>
@@ -77,9 +83,11 @@ const AddFieldDialog = () => {
             />
             <Label htmlFor="required">Required</Label>
           </div>
+          <AllowFieldList />
         </div>
+
         <DialogFooter>
-          <Button onClick={() => setField(position, field)}>Add Field</Button>
+          <Button onClick={handleUpsertField}>Add Field</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

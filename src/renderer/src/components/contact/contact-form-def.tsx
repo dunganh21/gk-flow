@@ -1,16 +1,21 @@
 import { ContactDefField } from '@/shared/types/contact'
-import { Button, Card, Input, Textarea } from '@renderer/components/ui'
+import { Button, Input, Textarea } from '@renderer/components/ui'
 import { uid } from '@renderer/lib/uid'
 import { useAddFieldDialogState, useContactDefStorage } from '@renderer/storage/contact-field'
+import FieldCard from './field-card'
 
 export function ContactFormDef() {
   const contactDef = useContactDefStorage((state) => state.contactDef)
-  const { setContactDef, setCurrentField } = useContactDefStorage.getState()
+  const { setContactDef, setCurrentField, deleteField } = useContactDefStorage.getState()
   const { toggleOpen: openAddFieldDialog } = useAddFieldDialogState.getState()
 
   const upsertField = (position: number | 'new', field: ContactDefField) => {
     setCurrentField(position, field)
     openAddFieldDialog()
+  }
+
+  const handleSave = () => {
+    console.log('save')
   }
 
   return (
@@ -33,19 +38,12 @@ export function ContactFormDef() {
       <h2 className="text-xl font-bold mt-8 mb-4">Fields</h2>
       <div className="space-y-4">
         {contactDef.fields.map((field, index) => (
-          <Card
-            key={index}
-            className="flex items-center justify-between p-4 hover:bg-muted cursor-pointer"
-            onClick={() => upsertField(index, field)}
-          >
-            <div className="flex items-center gap-4">
-              {/* <span className="bg-muted p-2 rounded">A</span> */}
-              <div>
-                <div>{field.name}</div>
-                <div className="text-sm text-muted-foreground">.{field.name.toLowerCase()}</div>
-              </div>
-            </div>
-          </Card>
+          <FieldCard
+            key={field.key}
+            fieldData={field}
+            onDelete={() => deleteField(index)}
+            onEdit={() => upsertField(index, field)}
+          />
         ))}
 
         <Button
@@ -63,6 +61,11 @@ export function ContactFormDef() {
           }
         >
           <span className="text-xl">+</span> Add field
+        </Button>
+      </div>
+      <div className="flex justify-end mt-4">
+        <Button type="submit" onClick={handleSave}>
+          Save
         </Button>
       </div>
     </div>

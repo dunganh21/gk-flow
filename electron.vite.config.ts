@@ -27,6 +27,9 @@ export default defineConfig({
         '@components': resolve('src/renderer/src/components'),
         '@lib': resolve('src/renderer/src/lib')
       }
+    },
+    build: {
+      sourcemap: true
     }
   }
 })

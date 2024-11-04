@@ -19,7 +19,7 @@ export type Contact = {
 }
 
 export type AllowListField<T> = T & {
-  allowList: boolean
+  allowList?: boolean
 }
 
 export type ContactDefFieldBase = {
@@ -29,15 +29,17 @@ export type ContactDefFieldBase = {
   isRequired: boolean
 }
 
-export type ContactDefTextField = ContactDefFieldBase & {
+export type ContactDefTextField = AllowListField<ContactDefFieldBase> & {
   type: 'text'
 }
-export type ContactDefTextFieldList = AllowListField<ContactDefTextField>
 
-export type ContactDefFieldNumber = ContactDefFieldBase & {
+export type ContactDefFieldEmail = AllowListField<ContactDefFieldBase> & {
+  type: 'email'
+}
+
+export type ContactDefFieldNumber = AllowListField<ContactDefFieldBase> & {
   type: 'number'
 }
-export type ContactDefFieldNumberList = AllowListField<ContactDefFieldNumber>
 
 export type ContactDefFieldSelect = ContactDefFieldBase & {
   type: 'select'
@@ -49,6 +51,9 @@ export type ContactDefFieldSelect = ContactDefFieldBase & {
 
 export type ContactDefFieldCheckbox = ContactDefFieldBase & {
   type: 'checkbox'
+}
+export type ContactDefFieldCheckboxes = ContactDefFieldBase & {
+  type: 'checkboxes'
   options: {
     label: string
     value: string
@@ -62,16 +67,17 @@ export type ContactDefFieldDate = ContactDefFieldBase & {
 export type FieldTypes = 'text' | 'number' | 'select' | 'checkbox' | 'date'
 export type ContactDefField =
   | ContactDefTextField
-  | ContactDefTextFieldList
+  | ContactDefFieldEmail
   | ContactDefFieldNumber
-  | ContactDefFieldNumberList
   | ContactDefFieldSelect
   | ContactDefFieldCheckbox
+  | ContactDefFieldCheckboxes
   | ContactDefFieldDate
 /**
  * Định dạnh của loại contact
  */
 export interface ContactDef {
+  id: string
   name: string
   description: string
   fields: ContactDefField[]

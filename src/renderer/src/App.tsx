@@ -6,11 +6,9 @@ const App = () => {
   return (
     <div>
       <BrowserRouter>
-        <div className="flex">
+        <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 p-8">
-            <AppRouter />
-          </main>
+          <main className="flex-1 ml-48 p-6 overflow-auto">{<AppRouter />}</main>
         </div>
       </BrowserRouter>
     </div>

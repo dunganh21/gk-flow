@@ -15,6 +15,7 @@ interface ContactDefStorage {
   resetCurrentField: () => void
 
   setField: (position: number | 'new', field: ContactDefField) => void
+  deleteField: (position: number) => void
 }
 
 export const useContactDefStorage = createStore<ContactDefStorage>((set) => ({
@@ -53,6 +54,11 @@ export const useContactDefStorage = createStore<ContactDefStorage>((set) => ({
       } else {
         state.contactDef.fields[position] = field
       }
+    }),
+
+  deleteField: (position: number) =>
+    set((state) => {
+      state.contactDef.fields.splice(position, 1)
     })
 }))
 

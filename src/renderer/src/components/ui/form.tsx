@@ -80,8 +80,8 @@ FormItem.displayName = 'FormItem'
 
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & { required?: boolean }
+>(({ className, required, children, ...props }, ref) => {
   const { error, formItemId } = useFormField()
 
   return (
@@ -90,7 +90,10 @@ const FormLabel = React.forwardRef<
       className={cn(error && 'text-destructive', className)}
       htmlFor={formItemId}
       {...props}
-    />
+    >
+      {children}
+      {required && <span className="text-destructive ml-1">*</span>}
+    </Label>
   )
 })
 FormLabel.displayName = 'FormLabel'
@@ -135,7 +138,17 @@ const FormMessage = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message) : children
+  const parseErrorArray = () => {
+    if (Array.isArray(error)) {
+      const firstErrorIndex = error.findIndex((e) => e?.message)
+      return firstErrorIndex !== -1
+        ? error[firstErrorIndex].message + ' at position ' + (firstErrorIndex + 1)
+        : ''
+    }
+    return String(error?.message)
+  }
+
+  const body = error ? parseErrorArray() : children
 
   if (!body) {
     return null

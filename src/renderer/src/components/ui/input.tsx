@@ -11,7 +11,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
     return (
       <div className="grid w-full items-center gap-1.5">
-        {!props.hideLabel && <Label>{props.label}</Label>}
+        {!props.hideLabel && (
+          <div className="flex items-center">
+            <Label>{props.label}</Label>
+            {props.required && <span className="text-red-500 ml-1">*</span>}
+          </div>
+        )}
         <input
           type={type}
           className={cn(

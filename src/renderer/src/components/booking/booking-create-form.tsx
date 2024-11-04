@@ -9,7 +9,12 @@ const BookingForm = () => {
   const { form, previewForm } = useBookingForm()
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(previewForm)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(previewForm, (errors) => {
+          console.log('form errors:', errors)
+        })}
+        className="space-y-8"
+      >
         <FormField
           control={form.control}
           name="bookingNumber"

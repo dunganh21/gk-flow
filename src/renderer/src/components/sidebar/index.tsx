@@ -14,7 +14,7 @@ const Sidebar: React.FC = () => {
   const location = useLocation()
 
   return (
-    <div className="flex flex-col h-screen w-64 bg-background border-r">
+    <div className="flex flex-col h-screen w-48 bg-background border-r border-border fixed left-0 top-0">
       <div className="p-4">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-primary rounded-full" />
