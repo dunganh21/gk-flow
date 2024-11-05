@@ -1,5 +1,5 @@
 'use client'
-
+import { AllowListField, ContactDefField, ContactDefFieldBase } from '@/shared/types/contact'
 import { Button } from '@components/ui/button'
 import { Checkbox } from '@components/ui/checkbox'
 import {
@@ -28,10 +28,17 @@ import {
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { defaultContactEntryList, sampleContactDef } from './sample.data'
 
-const sampleEntryRecord = 
+export const getTableColumnWidth = (field: ContactDefField) => {
+  if ((field as AllowListField<ContactDefFieldBase>).allowList) {
+    return 'w-[250px] inline-block'
+  } else {
+    return 'w-[100px] inline-block'
+  }
+}
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Record<string, any>>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -53,41 +60,37 @@ export const columns: ColumnDef<Payment>[] = [
     enableSorting: false,
     enableHiding: false
   },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => <div className="capitalize">{row.getValue('status')}</div>
-  },
-  {
-    accessorKey: 'email',
+  ...sampleContactDef.fields.map((field) => ({
+    accessorKey: field.key,
+
     header: ({ column }) => {
-      return (
+      return field.type === 'date' || field.type === 'number' ? (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="w-full"
         >
-          Email
+          {field.name}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      ) : (
+        <div className={`px-4 py-2 ${getTableColumnWidth(field)}`}>{field.name}</div>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue('email')}</div>
-  },
-  {
-    accessorKey: 'amount',
-    header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('amount'))
+      const value = row.getValue(field.key)
 
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-      }).format(amount)
-
-      return <div className="text-right font-medium">{formatted}</div>
+      // Handle different field types
+      if (Array.isArray(value)) {
+        return <div className="px-4">{value.join(', ')}</div>
+      }
+      if (typeof value === 'boolean') {
+        return <div className="px-4">{value ? 'Yes' : 'No'}</div>
+      }
+      return <div className="px-4">{value}</div>
     }
-  },
+  })),
+
   {
     id: 'actions',
     enableHiding: false,
@@ -105,11 +108,11 @@ export const columns: ColumnDef<Payment>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(payment.id)}>
-              Copy payment ID
+              Copy json
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -126,7 +129,7 @@ export default function ContactEntry() {
   const [rowSelection, setRowSelection] = useState({})
 
   const table = useReactTable({
-    data,
+    data: defaultContactEntryList,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -143,6 +146,7 @@ export default function ContactEntry() {
       rowSelection
     }
   })
+  console.log('[DEBUG] / ContactEntry / getFilteredRowModel:', getFilteredRowModel)
 
   return (
     <div className="w-full">
@@ -202,6 +206,7 @@ export default function ContactEntry() {
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   onClick={() => navigate(`/contact/${row.original.id}/entries/entry-id-smaple`)}
+                  className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
