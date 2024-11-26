@@ -9,8 +9,8 @@ import { Calendar } from './calendar'
 import { Popover, PopoverContent, PopoverTrigger } from './popover'
 
 export type DateTimePickerProps = {
-  date: Date
-  setDate: (date: Date) => void
+  date: Date | undefined
+  setDate: (date: Date | undefined) => void
   timeAllow?: boolean
 }
 
