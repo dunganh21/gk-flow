@@ -1,4 +1,4 @@
-import { ContactDefField } from '@/shared/types/contact'
+import { ContactDefField, ContactDefFieldSelect } from '@/shared/types/contact'
 import {
   Button,
   Checkbox,
@@ -20,6 +20,8 @@ import {
 import { FIELD_TYPES } from '@renderer/constants/select'
 import { useAddFieldDialogState, useContactDefStorage } from '@renderer/storage/contact-field'
 import AllowFieldList from './allow-list-field'
+import { SelectPreset } from './select-preset'
+import _ from 'lodash'
 
 const AddFieldDialog = () => {
   const { isOpen, toggleOpen } = useAddFieldDialogState()
@@ -53,11 +55,25 @@ const AddFieldDialog = () => {
             value={field.description}
             onChange={(e) => editCurrentField({ ...field, description: e.target.value })}
           />
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="required"
+              checked={field.isRequired}
+              onCheckedChange={(checked) =>
+                editCurrentField({ ...field, isRequired: checked as boolean })
+              }
+            />
+            <Label htmlFor="required">Required</Label>
+          </div>
 
           <Select
-            onValueChange={(value) =>
-              editCurrentField({ ...field, type: value } as ContactDefField)
-            }
+            onValueChange={(value) => {
+              if (value === 'select') {
+                editCurrentField({ ...field, options: [''], type: value } as ContactDefFieldSelect)
+              } else {
+                editCurrentField({ ..._.omit(field, 'options'), type: value } as ContactDefField)
+              }
+            }}
             value={field.type}
             label="Field type"
           >
@@ -73,17 +89,8 @@ const AddFieldDialog = () => {
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="required"
-              checked={field.isRequired}
-              onCheckedChange={(checked) =>
-                editCurrentField({ ...field, isRequired: checked as boolean })
-              }
-            />
-            <Label htmlFor="required">Required</Label>
-          </div>
           <AllowFieldList />
+          {field.type === 'select' && <SelectPreset />}
         </div>
 
         <DialogFooter>

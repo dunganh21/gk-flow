@@ -23,6 +23,7 @@ export default defineConfig({
     plugins: [react()],
     resolve: {
       alias: {
+        '@': resolve('src'),
         '@renderer': resolve('src/renderer/src'),
         '@components': resolve('src/renderer/src/components'),
         '@lib': resolve('src/renderer/src/lib')

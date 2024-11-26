@@ -6,7 +6,7 @@ const AllowFieldList = () => {
   const { currentField, editCurrentField } = useContactDefStorage()
   const { field } = currentField as { field: ContactDefField }
 
-  return ['text', 'number'].includes(field.type) ? (
+  return ['text', 'number', 'email'].includes(field.type) ? (
     <div className="flex items-center gap-2">
       <Checkbox
         id="allow-list"

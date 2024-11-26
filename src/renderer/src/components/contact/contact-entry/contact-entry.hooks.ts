@@ -1,7 +1,11 @@
-import { ContactDefField, ContactDef } from '@/shared/types/contact'
+import { uid } from '@/renderer/src/lib/uid'
+import { ContactDef, ContactDefField, ContactEntry } from '@/shared/types/contact'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
+import { useRxCollection, useRxData } from 'rxdb-hooks'
 import { z } from 'zod'
+import { toast } from '../../ui/toast/use-toast'
 
 const createFormSchemaValue = (fields: ContactDefField) => {
   const { type, isRequired } = fields
@@ -44,9 +48,7 @@ const createFormSchemaValue = (fields: ContactDefField) => {
   }
 
   if (type === 'select') {
-    return isRequired
-      ? z.array(z.string()).min(1, 'At least one option must be selected')
-      : z.array(z.string())
+    return isRequired ? z.string().min(1, 'An option must be selected') : z.string()
   }
 
   if (type === 'checkboxes') {
@@ -85,66 +87,34 @@ const getDefaultFormEntry = (fields: ContactDefField) => {
   return null
 }
 
-export const sampleContactDef: ContactDef = {
-  id: 'shipping-agent',
-  name: 'Shipping Agent',
-  description: 'Contact information for shipping agents',
-  fields: [
-    {
-      type: 'text',
-      key: 'companyName',
-      name: 'Company Name',
-      description: 'Name of the shipping company',
-      isRequired: true,
-      allowList: true
-    },
-    {
-      type: 'email',
-      key: 'email',
-      name: 'Email Address',
-      description: 'Primary email contact',
-      isRequired: true,
-      allowList: true
-    },
-    {
-      type: 'number',
-      key: 'employeeCount',
-      name: 'Number of Employees',
-      description: 'Total number of employees',
-      isRequired: false,
-      allowList: false
-    },
-    {
-      type: 'checkbox',
-      key: 'service',
-      name: 'Services Offered',
-      description: 'Available shipping services',
-      isRequired: true
-    },
-    {
-      type: 'checkboxes',
-      key: 'services',
-      name: 'Services Offered',
-      description: 'Available shipping services',
-      isRequired: true,
-      options: [
-        { label: 'Air Freight', value: 'air' },
-        { label: 'Sea Freight', value: 'sea' },
-        { label: 'Land Transport', value: 'land' }
-      ]
-    },
-    {
-      type: 'date',
-      key: 'establishedDate',
-      name: 'Established Date',
-      description: 'Company establishment date',
-      isRequired: false
-    }
-  ]
-}
+export const useContactEntryForm = (contactDefId: string, entryId: string) => {
+  const contactDefQueryConstructor = useCallback(
+    (collection) => collection.findOne({ selector: { id: contactDefId } }),
+    [contactDefId]
+  )
+  const contactEntryQueryConstructor = useCallback(
+    (collection) => collection.findOne({ selector: { id: entryId } }),
+    [entryId]
+  )
 
-export const useContactEntryForm = (sampleContactDef: ContactDef) => {
-  const contactEntrySchema = sampleContactDef.fields.reduce(
+  const { result: contactDefResult } = useRxData<ContactDef>(
+    'contact-defs',
+    contactDefQueryConstructor
+  )
+  const contactDef = contactDefResult?.[0]
+  const { result: entryResult } = useRxData<ContactEntry>('contacts', contactEntryQueryConstructor)
+
+  if (!contactDef) {
+    const emptyForm = useForm({
+      defaultValues: {}
+    })
+    return {
+      form: emptyForm,
+      contactDef: null
+    }
+  }
+
+  const contactEntrySchema = contactDef.fields.reduce(
     (acc, field) => {
       const schema = createFormSchemaValue(field)
       if (schema) {
@@ -156,24 +126,54 @@ export const useContactEntryForm = (sampleContactDef: ContactDef) => {
   )
   const zodSchema = z.object(contactEntrySchema)
 
-  const defaultContactEntry = sampleContactDef.fields.reduce((acc, field) => {
-    const value = getDefaultFormEntry(field)
-    if (value !== null) {
-      acc[field.key] = value
-    }
-    return acc
-  }, {})
-
   type ContactDefFormValues = z.infer<typeof zodSchema>
 
   const form = useForm<ContactDefFormValues>({
     resolver: zodResolver(zodSchema),
-    defaultValues: defaultContactEntry
+    defaultValues: async () => {
+      const initialValues = contactDef.fields.reduce((acc, field) => {
+        const value = getDefaultFormEntry(field)
+        if (value !== null) {
+          acc[field.key] = value
+        }
+        return acc
+      }, {} as ContactEntry)
+      return initialValues
+    }
   })
 
   return {
     form,
-    contactEntrySchema,
-    defaultContactEntry
+    contactDef,
+    entry: entryResult?.[0]
+  }
+}
+
+export const useContactActions = () => {
+  const collection = useRxCollection<ContactEntry>('contacts')
+
+  const onSaveContact = async (data: ContactEntry, contactDefId: string, contactId: string) => {
+    if (contactId === 'new') {
+      await collection?.insert({
+        id: uid(),
+        contactDefId,
+        data
+      })
+    } else {
+      await collection?.findOne({ selector: { id: contactId } }).update({
+        $set: {
+          data
+        }
+      })
+    }
+
+    toast({
+      title: 'Contact form saved',
+      description: 'Your contact form has been saved successfully'
+    })
+  }
+
+  return {
+    onSaveContact
   }
 }

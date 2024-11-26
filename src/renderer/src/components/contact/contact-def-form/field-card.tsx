@@ -1,5 +1,5 @@
 import { ContactDefField, ContactDefTextField } from '@shared/types/contact'
-import { Button, Card } from '../ui'
+import { Button, Card } from '../../ui'
 import { TrashIcon } from '@radix-ui/react-icons'
 
 interface FieldCardProps {

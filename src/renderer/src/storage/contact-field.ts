@@ -16,10 +16,12 @@ interface ContactDefStorage {
 
   setField: (position: number | 'new', field: ContactDefField) => void
   deleteField: (position: number) => void
+  resetContactDef: () => void
 }
 
 export const useContactDefStorage = createStore<ContactDefStorage>((set) => ({
   contactDef: {
+    id: '',
     name: '',
     description: '',
     fields: []
@@ -49,8 +51,11 @@ export const useContactDefStorage = createStore<ContactDefStorage>((set) => ({
 
   setField: (position, field) =>
     set((state) => {
+      console.log('[DEBUG] / useContactDefStorage / position:', position, field)
       if (position === 'new') {
-        state.contactDef.fields.push(field)
+        console.log('before error')
+        state.contactDef.fields = [...state.contactDef.fields, field]
+        console.log('after error')
       } else {
         state.contactDef.fields[position] = field
       }
@@ -59,6 +64,11 @@ export const useContactDefStorage = createStore<ContactDefStorage>((set) => ({
   deleteField: (position: number) =>
     set((state) => {
       state.contactDef.fields.splice(position, 1)
+    }),
+
+  resetContactDef: () =>
+    set((state) => {
+      state.contactDef = { id: '', name: '', description: '', fields: [] }
     })
 }))
 

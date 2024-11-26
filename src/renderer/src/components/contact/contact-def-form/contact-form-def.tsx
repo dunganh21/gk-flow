@@ -2,20 +2,38 @@ import { ContactDefField } from '@/shared/types/contact'
 import { Button, Input, Textarea } from '@renderer/components/ui'
 import { uid } from '@renderer/lib/uid'
 import { useAddFieldDialogState, useContactDefStorage } from '@renderer/storage/contact-field'
+import { Loading } from '../../ui/loading'
+import { toast } from '../../ui/toast/use-toast'
+import { useContactFormDef, useContactFormDefActions } from './contact-form-def.hook'
 import FieldCard from './field-card'
+import { useEffect } from 'react'
 
-export function ContactFormDef() {
+interface ContactFormDefProps {
+  id: string
+}
+
+export function ContactFormDef({ id }: ContactFormDefProps) {
+  const { isFetching } = useContactFormDef(id)
+  const { onSaveFormDef } = useContactFormDefActions()
+
   const contactDef = useContactDefStorage((state) => state.contactDef)
+  const { resetContactDef } = useContactDefStorage.getState()
   const { setContactDef, setCurrentField, deleteField } = useContactDefStorage.getState()
   const { toggleOpen: openAddFieldDialog } = useAddFieldDialogState.getState()
+
+  useEffect(() => {
+    return () => {
+      resetContactDef()
+    }
+  }, [])
 
   const upsertField = (position: number | 'new', field: ContactDefField) => {
     setCurrentField(position, field)
     openAddFieldDialog()
   }
 
-  const handleSave = () => {
-    console.log('save')
+  if (isFetching) {
+    return <Loading />
   }
 
   return (
@@ -27,6 +45,13 @@ export function ContactFormDef() {
           value={contactDef.name}
           onChange={(e) => setContactDef({ ...contactDef, name: e.target.value })}
           maxLength={255}
+          required
+          onError={() =>
+            toast({
+              title: 'Name is required',
+              description: 'Please enter a name for your contact form'
+            })
+          }
         />
 
         <Textarea
@@ -64,7 +89,7 @@ export function ContactFormDef() {
         </Button>
       </div>
       <div className="flex justify-end mt-4">
-        <Button type="submit" onClick={handleSave}>
+        <Button type="submit" onClick={onSaveFormDef}>
           Save
         </Button>
       </div>

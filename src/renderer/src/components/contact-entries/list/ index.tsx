@@ -27,8 +27,9 @@ import {
 } from '@tanstack/react-table'
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { defaultContactEntryList, sampleContactDef } from './sample.data'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Loading } from '../../ui'
+import { useContactEntries } from './contact-entries.hooks'
 
 export const getTableColumnWidth = (field: ContactDefField) => {
   if ((field as AllowListField<ContactDefFieldBase>).allowList) {
@@ -38,98 +39,102 @@ export const getTableColumnWidth = (field: ContactDefField) => {
   }
 }
 
-export const columns: ColumnDef<Record<string, any>>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false
-  },
-  ...sampleContactDef.fields.map((field) => ({
-    accessorKey: field.key,
-
-    header: ({ column }) => {
-      return field.type === 'date' || field.type === 'number' ? (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="w-full"
-        >
-          {field.name}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ) : (
-        <div className={`px-4 py-2 ${getTableColumnWidth(field)}`}>{field.name}</div>
-      )
-    },
-    cell: ({ row }) => {
-      const value = row.getValue(field.key)
-
-      // Handle different field types
-      if (Array.isArray(value)) {
-        return <div className="px-4">{value.join(', ')}</div>
-      }
-      if (typeof value === 'boolean') {
-        return <div className="px-4">{value ? 'Yes' : 'No'}</div>
-      }
-      return <div className="px-4">{value}</div>
-    }
-  })),
-
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(payment.id)}>
-              Copy json
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    }
-  }
-]
-
 export default function ContactEntry() {
   const navigate = useNavigate()
-
+  const { id: contactDefId } = useParams() as { id: string }
+  const { result, isFetching, contactDef } = useContactEntries(contactDefId)
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
+  const columns: ColumnDef<Record<string, any>>[] = [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <div onClick={(event) => event.stopPropagation()}>
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value)
+            }}
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false
+    },
+    ...(contactDef?.fields?.map((field) => ({
+      accessorKey: field.key,
+      header: ({ column }) => {
+        return field.type === 'date' || field.type === 'number' ? (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="w-full"
+          >
+            {field.name}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ) : (
+          <div className={`px-4 py-2 ${getTableColumnWidth(field)}`}>{field.name}</div>
+        )
+      },
+      cell: ({ row }) => {
+        const value = row.original.data[field.key]
+        // Handle different field types
+        if (Array.isArray(value)) {
+          return <div className="px-4">{value.join(', ')}</div>
+        }
+        if (typeof value === 'boolean') {
+          return <div className="px-4">{value ? 'Yes' : 'No'}</div>
+        }
+        return <div className="px-4">{value}</div>
+      }
+    })) ?? []),
+
+    {
+      id: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const payment = row.original
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(payment.id)}>
+                Copy json
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      }
+    }
+  ]
+
   const table = useReactTable({
-    data: defaultContactEntryList,
+    data: result ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -146,7 +151,10 @@ export default function ContactEntry() {
       rowSelection
     }
   })
-  console.log('[DEBUG] / ContactEntry / getFilteredRowModel:', getFilteredRowModel)
+
+  if (isFetching) {
+    return <Loading />
+  }
 
   return (
     <div className="w-full">
@@ -175,7 +183,7 @@ export default function ContactEntry() {
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   >
-                    {column.id}
+                    {contactDef?.fields.find((f) => f.key === column.id)?.name}
                   </DropdownMenuCheckboxItem>
                 )
               })}
@@ -205,7 +213,9 @@ export default function ContactEntry() {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  onClick={() => navigate(`/contact/${row.original.id}/entries/entry-id-smaple`)}
+                  onClick={() =>
+                    navigate(`/contact/${row.original.contactDefId}/entries/${row.original.id}`)
+                  }
                   className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -218,7 +228,7 @@ export default function ContactEntry() {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {isFetching ? 'Loading...' : 'No results.'}
                 </TableCell>
               </TableRow>
             )}

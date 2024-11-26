@@ -38,7 +38,7 @@ const ContactEntryTextField = ({ form, fieldDef }: TextFieldProps) => {
               <Input
                 {...field}
                 type={type}
-                required={isRequired}
+                // required={isRequired}
                 onChange={(e) => field.onChange(handleChange(e))}
               />
             )}

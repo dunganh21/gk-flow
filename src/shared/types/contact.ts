@@ -43,10 +43,7 @@ export type ContactDefFieldNumber = AllowListField<ContactDefFieldBase> & {
 
 export type ContactDefFieldSelect = ContactDefFieldBase & {
   type: 'select'
-  options: {
-    label: string
-    value: string
-  }[]
+  options: string[]
 }
 
 export type ContactDefFieldCheckbox = ContactDefFieldBase & {
@@ -81,4 +78,10 @@ export interface ContactDef {
   name: string
   description: string
   fields: ContactDefField[]
+}
+
+export interface ContactEntry {
+  id: string
+  contactDefId: string
+  data: Record<string, any>
 }

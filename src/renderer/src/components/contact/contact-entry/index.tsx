@@ -1,15 +1,32 @@
 'use client '
-import { ContactDefField } from '@/shared/types/contact'
+import { ContactDefField, ContactEntry } from '@/shared/types/contact'
 import { Button, Form } from '@components/ui'
-import * as z from 'zod'
+import { useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import ErrorCard from '../../error-card'
 import ContactEntryCheckboxField from './checkbox'
-import { sampleContactDef, useContactEntryForm } from './contact-entry.hooks'
-import ContactEntryDateTimeField from './date-time-field'
-import ContactEntryTextField from './text-field'
 import ContactEntryCheckboxesField from './checkboxes'
+import { useContactActions, useContactEntryForm } from './contact-entry.hooks'
+import ContactEntryDateTimeField from './date-time-field'
+import ContactEntrySelectField from './select'
+import ContactEntryTextField from './text-field'
 
 export function ContactEntryEdit() {
-  const { form } = useContactEntryForm(sampleContactDef)
+  const { id: contactDefId, entryId } = useParams() as { id: string; entryId: string }
+  const { form, contactDef, entry } = useContactEntryForm(contactDefId, entryId)
+  const { onSaveContact: onSaveFormDef } = useContactActions()
+
+  useEffect(() => {
+    if (entry?.data) {
+      Object.entries(entry.data).forEach(([key, value]) => {
+        form.setValue(key, value)
+      })
+    }
+  }, [entry?.data])
+
+  if (!form || !contactDef) {
+    return <ErrorCard />
+  }
 
   const renderField = (field: ContactDefField) => {
     switch (field.type) {
@@ -17,9 +34,8 @@ export function ContactEntryEdit() {
       case 'email':
       case 'number':
         return <ContactEntryTextField form={form} fieldDef={field} key={field.key} />
-
       case 'select':
-        return <div>Chưa có fied này</div>
+        return <ContactEntrySelectField form={form} fieldDef={field} key={field.key} />
 
       case 'checkbox':
         return <ContactEntryCheckboxField form={form} fieldDef={field} key={field.key} />
@@ -36,19 +52,11 @@ export function ContactEntryEdit() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit((data) => {
-          try {
-            console.log('run this abc', data)
-
-            // Handle successful validation
-          } catch (error) {
-            if (error instanceof z.ZodError) {
-              console.log('validation errors:', error.errors)
-            }
-          }
+          onSaveFormDef(data as ContactEntry, contactDefId, entryId)
         })}
         className="space-y-8"
       >
-        {sampleContactDef.fields.map(renderField)}
+        {contactDef.fields.map(renderField)}
         <Button type="submit">Save contact entry</Button>
       </form>
     </Form>

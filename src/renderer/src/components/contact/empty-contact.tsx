@@ -7,8 +7,6 @@ interface EmptyContactProps {
 }
 
 const EmptyContact: React.FC<EmptyContactProps> = ({ onCreateNew }) => {
-  console.log('run this')
-
   return (
     <div className="text-center py-10">
       <UserPlus className="mx-auto h-12 w-12 text-gray-400" />

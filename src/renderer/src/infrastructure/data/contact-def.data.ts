@@ -2,6 +2,7 @@ import { ContactDef } from '@/shared/types/contact'
 
 export const CONTACT_DEF_DATA: ContactDef[] = [
   {
+    id: 'agent-nhat',
     name: 'Aggent bên nhật',
     description: 'Aggent bên nhật chuyện nhận tàu từ bên đấy sang',
     fields: [
@@ -37,6 +38,7 @@ export const CONTACT_DEF_DATA: ContactDef[] = [
     ]
   },
   {
+    id: 'driver',
     name: 'Lái xe',
     description: 'Lái xe chuyện nhận tàu từ bên nhật sang',
     fields: [
