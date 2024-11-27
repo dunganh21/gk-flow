@@ -13,6 +13,7 @@ import {
   RichTextEditor,
   Button
 } from '../ui'
+import { useTemplateSelectText } from './template-select-text.hook'
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -24,6 +25,8 @@ const formSchema = z.object({
 })
 
 export function TemplateForm() {
+  const { textOptions } = useTemplateSelectText()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,7 +62,7 @@ export function TemplateForm() {
             <FormItem>
               <FormLabel>Content</FormLabel>
               <FormControl>
-                <RichTextEditor {...field} />
+                <RichTextEditor {...field} textOptions={textOptions} />
               </FormControl>
               <FormDescription>Enter the content for your template.</FormDescription>
               <FormMessage />

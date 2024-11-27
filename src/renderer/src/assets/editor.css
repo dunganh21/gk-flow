@@ -9,7 +9,7 @@
 .editor-container {
   margin: 20px auto 20px auto;
   border-radius: 2px;
-  max-width: 600px;
+  /* max-width: 1000px; */
   color: #000;
   position: relative;
   line-height: 20px;
@@ -22,6 +22,8 @@
 .editor-inner {
   background: #fff;
   position: relative;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .editor-input {
@@ -32,7 +34,6 @@
   position: relative;
   tab-size: 1;
   outline: 0;
-  padding: 15px 10px;
   caret-color: #444;
 }
 
@@ -42,7 +43,7 @@
   position: absolute;
   text-overflow: ellipsis;
   top: 15px;
-  left: 10px;
+  left: 18px;
   font-size: 15px;
   user-select: none;
   display: inline-block;

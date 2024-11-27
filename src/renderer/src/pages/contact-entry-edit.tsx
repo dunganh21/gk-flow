@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { ContactEntryEdit } from '../components/contact/contact-entry'
+import { ContactEntryEdit } from '../components/contact-entries/contact-entry-edit'
 import PageLayout from '../components/ui/page-layout'
 
 export function ContactEntryEditPage() {

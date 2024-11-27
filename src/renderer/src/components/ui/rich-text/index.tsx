@@ -1,31 +1,32 @@
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin'
-import { LexicalComposer } from '@lexical/react/LexicalComposer'
+import { InitialConfigType, LexicalComposer } from '@lexical/react/LexicalComposer'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
-import ExampleTheme from './editor-theme'
+import EditorTheme from './editor-theme'
+import CustomTextPickerPlugin, {
+  CustomTextPickerPluginProps
+} from './plugin/custom-text-picker-plugin'
 import { OnChangePlugin } from './plugin/on-change-plugin'
 import ToolbarPlugin from './plugin/tool-bar-plugin'
 
 const placeholder = 'Enter some rich text...'
-
-const editorConfig = {
-  namespace: 'React.js Demo',
+const editorConfig: InitialConfigType = {
+  namespace: 'Rich Text Editor',
   nodes: [],
   // Handling of errors during update
   onError(error: Error) {
     throw error
   },
-  // The editor theme
-  theme: ExampleTheme
+  theme: EditorTheme
 }
 
-export interface RichTextEditorProps {
+export interface RichTextEditorProps extends Partial<CustomTextPickerPluginProps> {
   onChange: (editorState: string) => void
 }
 
-export function RichTextEditor({ onChange }: RichTextEditorProps) {
+export function RichTextEditor({ onChange, ...textPickerProps }: RichTextEditorProps) {
   return (
     <LexicalComposer initialConfig={editorConfig}>
       <div className="editor-container border border-gray-300 rounded-lg shadow-sm">
@@ -43,6 +44,7 @@ export function RichTextEditor({ onChange }: RichTextEditorProps) {
           />
           <HistoryPlugin />
           <AutoFocusPlugin />
+          <CustomTextPickerPlugin wordTrigger="{{" textOptions={[]} {...textPickerProps} />
           <OnChangePlugin onChange={onChange} />
         </div>
       </div>
